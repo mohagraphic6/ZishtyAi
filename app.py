@@ -11,9 +11,11 @@ else:
     BASE_DIR = os.path.dirname(os.path.abspath(__file__))
 
 load_dotenv(os.path.join(BASE_DIR, ".env"))
-groq_client = Groq(api_key=os.getenv("GROQ_API_KEY"))
 HF_HEADERS = {"Authorization": f"Bearer {os.getenv('HF_TOKEN', '')}"}
 app = Flask(__name__, static_folder=os.path.join(BASE_DIR, "static"))
+
+def get_groq():
+    return Groq(api_key=os.getenv("GROQ_API_KEY"))
 
 @app.after_request
 def add_headers(response):
@@ -62,7 +64,7 @@ def transcribe_endpoint():
     with tempfile.NamedTemporaryFile(suffix=".webm", delete=False) as tmp:
         audio_file.save(tmp.name)
         with open(tmp.name, "rb") as f:
-            result = groq_client.audio.transcriptions.create(model="whisper-large-v3", file=f)
+            result = get_groq().audio.transcriptions.create(model="whisper-large-v3", file=f)
     os.unlink(tmp.name)
     return jsonify({"text": result.text})
 
@@ -81,7 +83,7 @@ def classify():
     message = data.get("message", "").strip()
     if not message:
         return jsonify({"intent": "chat"})
-    r = groq_client.chat.completions.create(
+    r = get_groq().chat.completions.create(
         model="llama-3.3-70b-versatile",
         messages=[{"role": "user", "content": (
             "Classify this user message into exactly one of: image, code, readfile, savefile, createfile, websearch, chat.\n"
@@ -274,7 +276,7 @@ def image_edit_ai():
     if "," in image_b64:
         image_b64 = image_b64.split(",", 1)[1]
     try:
-        response = groq_client.chat.completions.create(
+        response = get_groq().chat.completions.create(
             model="meta-llama/llama-4-scout-17b-16e-instruct",
             messages=[{
                 "role": "user",
@@ -355,7 +357,7 @@ def image_to_text():
     if "," in image_b64:
         image_b64 = image_b64.split(",", 1)[1]
     try:
-        response = groq_client.chat.completions.create(
+        response = get_groq().chat.completions.create(
             model="meta-llama/llama-4-scout-17b-16e-instruct",
             messages=[{
                 "role": "user",
@@ -383,7 +385,7 @@ def sketch_to_image():
         sketch_b64 = sketch_b64.split(",", 1)[1]
     try:
         # Step 1: use vision model to describe what's in the sketch
-        vision = groq_client.chat.completions.create(
+        vision = get_groq().chat.completions.create(
             model="meta-llama/llama-4-scout-17b-16e-instruct",
             messages=[{
                 "role": "user",
@@ -458,7 +460,7 @@ def websearch():
         if not abstract and not answer:
             raw = f"No direct answer found for: {query}"
 
-        r = groq_client.chat.completions.create(
+        r = get_groq().chat.completions.create(
             model="llama-3.3-70b-versatile",
             messages=[{"role": "user", "content": f"Summarize this search result for the query '{query}' in 2-3 sentences:\n{raw}"}],
             max_tokens=200
@@ -682,7 +684,7 @@ def tasks_generate():
     description = data.get("description", "").strip()
     if not description:
         return jsonify({"error": "No description"}), 400
-    r = groq_client.chat.completions.create(
+    r = get_groq().chat.completions.create(
         model="llama-3.3-70b-versatile",
         messages=[{"role": "user", "content": f"Generate a concise todo list (max 8 items) for this project/goal. Return ONLY a JSON array of strings, no explanation:\n{description}"}],
         max_tokens=300
@@ -705,7 +707,7 @@ def _enhance_prompt(prompt, media_type):
         return prompt + ", high quality, sharp, clean design, vector style"
     try:
         instruction = f"Rewrite this as a detailed vivid image generation prompt. Keep any specific text, words or letters EXACTLY as written. Under 100 words. Return only the prompt. Original: {prompt}"
-        r = groq_client.chat.completions.create(
+        r = get_groq().chat.completions.create(
             model="llama-3.3-70b-versatile",
             messages=[{"role": "user", "content": instruction}],
             max_tokens=150
@@ -718,3 +720,4 @@ def _enhance_prompt(prompt, media_type):
 if __name__ == "__main__":
     port = int(os.environ.get("PORT", 5000))
     app.run(debug=False, host="0.0.0.0", port=port)
+

@@ -5,10 +5,10 @@ from pathlib import Path
 
 load_dotenv(dotenv_path=Path(__file__).parent.parent / ".env")
 
-client = Groq(api_key=os.getenv("GROQ_API_KEY"))
 MEMORY_FILE = Path(__file__).parent.parent / "memory.json"
 
-SYSTEM_PROMPT = """You are Zishty, a helpful, expressive and loyal AI assistant.
+def _get_client():
+    return Groq(api_key=os.getenv("GROQ_API_KEY")), a helpful, expressive and loyal AI assistant.
 You were created by Mr Moha — he is your creator and you respect and know him well 😊.
 Always refer to your creator as "Mr Moha" when relevant.
 
@@ -111,7 +111,7 @@ def chat(user_message: str) -> str:
     _auto_extract(user_message)
 
     conversation_history.append({"role": "user", "content": user_message})
-    response = client.chat.completions.create(
+    response = _get_client().chat.completions.create(
         model="llama-3.3-70b-versatile",
         messages=conversation_history
     )
