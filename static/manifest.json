@@ -1,0 +1,14 @@
+{
+  "name": "Zishty AI",
+  "short_name": "Zishty",
+  "description": "Your personal AI assistant by Mr Moha",
+  "start_url": "/",
+  "display": "standalone",
+  "background_color": "#0a0a14",
+  "theme_color": "#7c3aed",
+  "orientation": "portrait",
+  "icons": [
+    {"src": "/static/images.jpg", "sizes": "192x192", "type": "image/jpeg"},
+    {"src": "/static/images.jpg", "sizes": "512x512", "type": "image/jpeg"}
+  ]
+}
