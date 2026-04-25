@@ -5,6 +5,7 @@ from dotenv import load_dotenv
 import os, tempfile, requests, base64, hashlib, subprocess, re, difflib, socket, json, sys
 
 # support PyInstaller bundle
+# support PyInstaller bundle
 if getattr(sys, 'frozen', False):
     BASE_DIR = sys._MEIPASS
 else:
@@ -21,6 +22,14 @@ def get_groq():
 def add_headers(response):
     response.headers["ngrok-skip-browser-warning"] = "true"
     return response
+
+@app.errorhandler(404)
+def not_found(e):
+    return jsonify({"error": "Not found"}), 404
+
+@app.errorhandler(500)
+def server_error(e):
+    return jsonify({"error": str(e)}), 500
 
 
 @app.route("/")
