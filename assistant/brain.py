@@ -34,6 +34,7 @@ AUTO_MEMORY_PATTERNS = [
 ]
 
 conversation_history = []
+_history_initialized = False
 
 def _load_memory():
     if MEMORY_FILE.exists():
@@ -71,12 +72,16 @@ def _build_system_prompt():
     return base
 
 def _init_history():
-    global conversation_history
+    global conversation_history, _history_initialized
     conversation_history = [{"role": "system", "content": _build_system_prompt()}]
+    _history_initialized = True
 
-_init_history()
+def _ensure_init():
+    if not _history_initialized:
+        _init_history()
 
 def chat(user_message: str) -> str:
+    _ensure_init()
     lower = user_message.lower().strip()
 
     if lower.startswith("remember ") or lower.startswith("remember:"):
