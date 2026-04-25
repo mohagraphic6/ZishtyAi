@@ -51,11 +51,14 @@ def sw():
 # ── Chat ──
 @app.route("/chat", methods=["POST"])
 def chat_endpoint():
-    data = request.get_json()
-    message = data.get("message", "").strip()
-    if not message:
-        return jsonify({"error": "Empty message"}), 400
-    return jsonify({"reply": chat(message)})
+    try:
+        data = request.get_json()
+        message = data.get("message", "").strip()
+        if not message:
+            return jsonify({"error": "Empty message"}), 400
+        return jsonify({"reply": chat(message)})
+    except Exception as e:
+        return jsonify({"error": str(e)}), 500
 
 
 @app.route("/reset", methods=["POST"])
@@ -88,30 +91,26 @@ def tts_endpoint():
 # ── Intent classifier ──
 @app.route("/classify", methods=["POST"])
 def classify():
-    data = request.get_json()
-    message = data.get("message", "").strip()
-    if not message:
-        return jsonify({"intent": "chat"})
-    r = get_groq().chat.completions.create(
-        model="llama-3.3-70b-versatile",
-        messages=[{"role": "user", "content": (
-            "Classify this user message into exactly one of: image, code, readfile, savefile, createfile, websearch, chat.\n"
-            "- image: user wants any visual/picture/artwork generated\n"
-            "- code: user wants code written or executed\n"
-            "- readfile: user wants to open, read, preview, or show a file\n"
-            "- savefile: user wants to save a file or save changes\n"
-            "- createfile: user wants to create a new file\n"
-            "- websearch: user wants to search the web or get current info\n"
-            "- chat: anything else\n"
-            "Reply with ONLY the single word. No punctuation.\n\n"
-            f"Message: {message}"
-        )}],
-        max_tokens=5
-    )
-    intent = r.choices[0].message.content.strip().lower()
-    if intent not in ("image", "code", "readfile", "savefile", "createfile", "websearch", "chat"):
-        intent = "chat"
-    return jsonify({"intent": intent})
+    try:
+        data = request.get_json()
+        message = data.get("message", "").strip()
+        if not message:
+            return jsonify({"intent": "chat"})
+        r = get_groq().chat.completions.create(
+            model="llama-3.3-70b-versatile",
+            messages=[{"role": "user", "content": (
+                "Classify this user message into exactly one of: image, code, readfile, savefile, createfile, websearch, chat.\n"
+                "Reply with ONLY the single word.\n\n"
+                f"Message: {message}"
+            )}],
+            max_tokens=5
+        )
+        intent = r.choices[0].message.content.strip().lower()
+        if intent not in ("image", "code", "readfile", "savefile", "createfile", "websearch", "chat"):
+            intent = "chat"
+        return jsonify({"intent": intent})
+    except Exception as e:
+        return jsonify({"intent": "chat", "error": str(e)})
 
 
 # ── Filesystem ──
