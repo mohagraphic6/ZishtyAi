@@ -330,7 +330,7 @@ function appendMsg(role,html,raw){
     wrap.appendChild(acts);
   }
   document.getElementById('messages').appendChild(wrap);
-  document.getElementById('messages').scrollTop=9999;
+  const _m=document.getElementById('messages');_m.scrollTo({top:_m.scrollHeight,behavior:'smooth'});
   chatHistory.push({role:role==='user'?'user':'assistant',text:raw||html});
   return msg;
 }
@@ -486,7 +486,7 @@ async function solveInChat(dataUrl){
     <div class="scan-status">🔍 Scanning question…</div>`;
   row.appendChild(av);row.appendChild(msg);wrap.appendChild(row);
   document.getElementById('messages').appendChild(wrap);
-  document.getElementById('messages').scrollTop=9999;
+  const _m=document.getElementById('messages');_m.scrollTo({top:_m.scrollHeight,behavior:'smooth'});
 
   // extract question
   const r1=await fetch('/image-to-text',{method:'POST',headers:{'Content-Type':'application/json'},body:JSON.stringify({image:dataUrl})});
@@ -507,7 +507,7 @@ async function solveInChat(dataUrl){
     <div style="color:#aaa;font-size:0.8rem;margin-bottom:10px">${esc(question)}</div>
     <div style="font-size:0.72rem;color:#4ade80;margin-bottom:4px">✅ Answer</div>
     <div style="color:#eee;line-height:1.7">${md(answer)}</div>`;
-  document.getElementById('messages').scrollTop=9999;
+  const _m=document.getElementById('messages');_m.scrollTo({top:_m.scrollHeight,behavior:'smooth'});
   chatHistory.push({role:'assistant',text:answer});
   if(ttsOn)speak(answer);
 }
@@ -631,7 +631,7 @@ async function runFeature(name){
           <button class="feat-btn" style="margin-top:6px" onclick="stopQrScan()">Stop</button>`;
         row.appendChild(av);row.appendChild(msg);wrap.appendChild(row);
         document.getElementById('messages').appendChild(wrap);
-        document.getElementById('messages').scrollTop=9999;
+        const _m=document.getElementById('messages');_m.scrollTo({top:_m.scrollHeight,behavior:'smooth'});
         // load jsQR and start scan
         if(!window.jsQR){
           const s=document.createElement('script');s.src='https://cdn.jsdelivr.net/npm/jsqr@1.4.0/dist/jsQR.js';
@@ -673,7 +673,7 @@ async function runFeature(name){
         <div id="drawGuess" style="margin-top:6px;color:#4ade80;font-size:0.85rem"></div>`;
       row.appendChild(av);row.appendChild(msg);wrap.appendChild(row);
       document.getElementById('messages').appendChild(wrap);
-      document.getElementById('messages').scrollTop=9999;
+      const _m=document.getElementById('messages');_m.scrollTo({top:_m.scrollHeight,behavior:'smooth'});
       setTimeout(()=>{
         drawCanvas=document.getElementById('drawCanvas');
         drawCtx=drawCanvas.getContext('2d');
@@ -779,7 +779,7 @@ if(/iPhone|iPad|iPod|Android/i.test(navigator.userAgent)){
   inp.addEventListener('focus',()=>{
     setTimeout(()=>{
       inp.scrollIntoView({behavior:'smooth',block:'end'});
-      document.getElementById('messages').scrollTop=9999;
+      const _m=document.getElementById('messages');_m.scrollTo({top:_m.scrollHeight,behavior:'smooth'});
     },300);
   });
   // fix viewport height on mobile
