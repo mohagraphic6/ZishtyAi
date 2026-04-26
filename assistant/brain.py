@@ -92,7 +92,8 @@ def chat(user_message: str) -> str:
         if fact not in memories:
             memories.append(fact)
             _save_memory(memories)
-            _init_history()
+            if conversation_history and conversation_history[0]["role"] == "system":
+                conversation_history[0]["content"] = _build_system_prompt()
         return f"Got it, I'll remember that: *{fact}*"
 
     if lower in ("what do you remember", "what do you remember?", "show memories", "list memories"):

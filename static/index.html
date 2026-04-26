@@ -1089,6 +1089,11 @@ function exportMd(){
   const text=chatHistory.map(m=>(m.role==='user'?'**You:** ':'**Zishty:** ')+m.text).join('\n\n---\n\n');
   const a=document.createElement('a');a.href=URL.createObjectURL(new Blob(['# Zishty Chat\n\n'+text],{type:'text/markdown'}));a.download='zishty-chat.md';a.click();toast('Exported');
 }
+
+// ── Initialization ──
+window.addEventListener('DOMContentLoaded', () => {
+  appendMsg('bot', "Hey! 👋 I'm Zishty, created by Mr Moha. How can I help you today? 😊");
+});
 </script>
 </body>
 </html>
