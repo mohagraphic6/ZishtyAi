@@ -337,33 +337,28 @@ function appendMsg(role,html,raw){
 
 async function sendChat(){
   const inp=document.getElementById('chatInp');
-  const msg=inp.value.trim();if(!msg)return;
-  inp.value='';inp.style.height='auto';
-  inp.blur(); // close keyboard on mobile
+  const msgText=inp.value.trim(); // Renamed 'msg' to 'msgText' for clarity and to avoid shadowing
+  if(!msgText)return;
+
   speechSynthesis.cancel();
   document.getElementById('sendBtn').disabled=true;
-  appendMsg('user',esc(msg),msg);
+
+  // 1. Append user message immediately to the chat display
+  appendMsg('user',esc(msgText),msgText);
+
+  // 2. Clear the input and blur it (hide keyboard) *after* the message is visible
+  inp.value='';
+  inp.style.height='auto';
+  inp.blur();
+
   // typing indicator via appendMsg
   const typingMsg=appendMsg('bot','<div class="typing"><span></span><span></span><span></span></div>');
 
-  let intent='chat';
-  try{const c=await api('/classify',{message:msg});intent=c.intent||'chat'}catch(e){}
-
-  typingMsg.closest('.msg-wrap').remove();
-
-  if(intent==='image'){await chatImageIntent(msg);document.getElementById('sendBtn').disabled=false;return}
-  if(intent==='websearch'){await chatWebIntent(msg);document.getElementById('sendBtn').disabled=false;return}
-
   try{
-    const d=await api('/chat',{message:msg});
-    const reply=d.reply||d.error||'…';
-    appendMsg('bot',reply,reply);
-    if(ttsOn)speak(reply);
-    if(/save.*(note|notes)|add.*(note|notes)|generate.*note|create.*note/i.test(msg)){
-      const r=await fetch('/notes');const nd=await r.json();
-      const existing=nd.notes||[];existing.push(reply);
-      await api('/notes',{notes:existing});notes=existing;
-      appendMsg('bot','📝 Saved to Notes!');toast('Saved to Notes');
+    let intent='chat';
+    try{const c=await api('/classify',{message:msgText});intent=c.intent||'chat'}catch(e){/* Consider logging classification errors for debugging */ }
+
+    // Remove typing indicator before showing the actual response or intent-specific UI
     }
   }catch(e){appendMsg('bot','⚠️ '+esc(e.message))}
   document.getElementById('sendBtn').disabled=false;
