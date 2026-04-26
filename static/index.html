@@ -185,7 +185,9 @@ body{font-family:'Segoe UI',sans-serif;background:#0a0a14;color:#eee;display:fle
     <button class="actbtn" onclick="openPanel('diff')" id="ab-diff" title="Diff Viewer">⇄</button>
     <button class="actbtn" onclick="openPanel('image')" id="ab-image" title="Image">🖼</button>
     <button class="actbtn" onclick="openPanel('notes')" id="ab-notes" title="Notes">📝</button>
+    <button class="actbtn" onclick="openPanel('tasks')" id="ab-tasks" title="Tasks">✅</button>
     <button class="actbtn" onclick="openPanel('wsearch')" id="ab-wsearch" title="Web Search">🌐</button>
+    <button class="actbtn" onclick="openPanel('security')" id="ab-security" title="Security">🛡️</button>
     <button class="actbtn" onclick="openPanel('video')" id="ab-video" title="Video Generator">🎬</button>
     <button class="actbtn" onclick="openPanel('export')" id="ab-export" title="Export Chat">📤</button>
     <div class="act-spacer"></div>
@@ -287,6 +289,60 @@ body{font-family:'Segoe UI',sans-serif;background:#0a0a14;color:#eee;display:fle
       <div class="fpanel" id="fpanel-notes">
         <div class="pad row"><button class="btn" onclick="addNote()">+ Note</button><button class="btn s" onclick="saveNotes()">💾 Save</button></div>
         <div class="scroll pad" style="padding-top:4px" id="notesList"></div>
+      </div>
+
+      <!-- Tasks -->
+      <div class="fpanel" id="fpanel-tasks">
+        <div class="pad">
+          <div class="sec-card">
+            <h3>Add Task</h3>
+            <div class="row">
+              <input class="inp" id="taskManInp" placeholder="New task..." style="flex:1" onkeydown="if(event.key==='Enter')addTaskManual()"/>
+              <button class="btn" onclick="addTaskManual()">Add</button>
+            </div>
+          </div>
+          <div class="sec-card">
+            <h3>AI Task Generator</h3>
+            <div class="row">
+              <input class="inp" id="taskGenInp" placeholder="Project goal..." style="flex:1"/>
+              <button class="btn s" onclick="genTasks()">Generate</button>
+            </div>
+          </div>
+          <div class="row" style="margin-bottom:10px">
+            <button class="btn" onclick="saveTasks()">💾 Save Changes</button>
+          </div>
+          <div class="scroll" id="tasksList"></div>
+        </div>
+      </div>
+
+      <!-- Security -->
+      <div class="fpanel" id="fpanel-security">
+        <div class="scroll pad">
+          <div class="sec-card">
+            <h3>Hash Generator</h3>
+            <div class="row">
+              <input class="inp" id="hashInp" placeholder="Text to hash..." style="flex:1"/>
+              <select class="inp" id="hashAlgo"><option value="md5">MD5</option><option value="sha256">SHA256</option></select>
+              <button class="btn" onclick="genHash()">Hash</button>
+            </div>
+            <div class="result-box" id="hashOut"></div>
+          </div>
+          <div class="sec-card">
+            <h3>Password Strength</h3>
+            <div class="row">
+              <input class="inp" id="pwdInp" type="password" placeholder="Password..." style="flex:1" oninput="checkPwd()"/>
+              <button class="btn s" onclick="togglePwdVis()">👁</button>
+            </div>
+            <div class="str-wrap"><div class="str-fill" id="strFill"></div></div>
+            <div id="pwdLvl" style="font-size:0.75rem;margin-top:4px"></div>
+            <div id="pwdFb" style="font-size:0.7rem;color:#555"></div>
+          </div>
+          <div class="sec-card">
+            <h3>Port Scanner (Local)</h3>
+            <div class="row"><input class="inp" id="scanHost" placeholder="localhost" style="flex:1"/><input class="inp" id="scanPorts" placeholder="80,443..." style="width:80px"/><button class="btn" onclick="portScan()">Scan</button></div>
+            <pre class="result-box" id="scanOut"></pre>
+          </div>
+        </div>
       </div>
 
       <!-- Web Search -->
@@ -419,7 +475,7 @@ function md(t){return t.replace(/```(\w*)\n?([\s\S]*?)```/g,(_,l,c)=>`<pre><code
 async function api(url,body){const r=await fetch(url,{method:'POST',headers:{'Content-Type':'application/json'},body:JSON.stringify(body)});return r.json()}
 
 // ── Panel switching ──
-const panelNames={code:'Code Runner',diff:'Diff Viewer',image:'Image',notes:'Notes',wsearch:'Web Search',video:'Video Generator',export:'Export Chat'};
+const panelNames={code:'Code Runner',diff:'Diff Viewer',image:'Image',notes:'Notes',tasks:'Task Manager',wsearch:'Web Search',security:'Security Tools',video:'Video Generator',export:'Export Chat'};
 function openPanel(name, skipLoad=false){
   document.querySelectorAll('.fpanel').forEach(p=>p.classList.remove('active'));
   document.querySelectorAll('.actbtn[id^=ab-]').forEach(b=>b.classList.remove('active'));
@@ -427,6 +483,7 @@ function openPanel(name, skipLoad=false){
   const ab=document.getElementById('ab-'+name);if(ab)ab.classList.add('active');
   document.getElementById('panelTitle').textContent=panelNames[name]||name;
   if(name==='notes' && !skipLoad)loadNotes();
+  if(name==='tasks' && !skipLoad)loadTasks();
   if(name==='export')buildExport();
 }
 

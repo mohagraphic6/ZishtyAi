@@ -61,7 +61,9 @@ def _auto_extract(message):
                 changed = True
     if changed:
         _save_memory(memories)
-        _init_history()
+        # Update the system prompt without resetting the conversation
+        if conversation_history and conversation_history[0]["role"] == "system":
+            conversation_history[0]["content"] = _build_system_prompt()
 
 def _build_system_prompt():
     base = SYSTEM_PROMPT

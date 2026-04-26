@@ -33,7 +33,7 @@ header{padding:12px 20px;display:flex;align-items:center;gap:12px;border-bottom:
 header::after{content:'';position:absolute;bottom:0;left:0;right:0;height:1px;background:linear-gradient(90deg,transparent,#7c3aed,transparent)}
 .logo-img{width:36px;height:36px;border-radius:50%;object-fit:cover;border:2px solid #7c3aed;box-shadow:0 0 12px rgba(124,58,237,.5)}
 .logo-text{font-size:1.1rem;font-weight:700;background:linear-gradient(135deg,#a78bfa,#60a5fa);-webkit-background-clip:text;background-clip:text;-webkit-text-fill-color:transparent}
-.logo-sub{font-size:0.68rem;color:#444;margin-left:2px}
+.logo-sub{font-size:0.68rem;color:#888;margin-left:2px}
 .header-right{margin-left:auto;display:flex;align-items:center;gap:8px}
 .status-dot{width:8px;height:8px;border-radius:50%;background:#4ade80;box-shadow:0 0 8px #4ade80;transition:background .3s,box-shadow .3s}
 .status-txt{font-size:0.7rem;color:#aaa;transition:color .3s}@keyframes pulse{0%,100%{opacity:1;box-shadow:0 0 8px #4ade80}50%{opacity:.5;box-shadow:0 0 16px #4ade80}}
@@ -210,7 +210,7 @@ body.theme-green .msg.user{background:linear-gradient(135deg,#006600,#004400)}
         <button class="feat-btn" onclick="runFeature('roast')" title="Roast Me">🔥</button>
         <button class="feat-btn" onclick="runFeature('quote')" title="Quote">💬</button>
         <button class="feat-btn" onclick="runFeature('draw')" title="Draw & Guess">🎨</button>
-        <button class="feat-btn" onclick="runFeature('theme')" title="Theme">�</button>
+        <button class="feat-btn" onclick="runFeature('theme')" title="Theme">✨</button>
         <button class="feat-btn" onclick="runFeature('pin')" title="Pin Message">📌</button>
         <button class="feat-btn" onclick="runFeature('music')" title="Music Mood">🎵</button>
         <button class="feat-btn" onclick="runFeature('password')" title="Password">🔑</button>
@@ -290,7 +290,7 @@ body.theme-green .msg.user{background:linear-gradient(135deg,#006600,#004400)}
 
 <script>
 // ── BG canvas ──
-(function(){const c=document.getElementById('bg'),ctx=c.getContext('2d');let W,H,pts=[];function resize(){W=c.width=innerWidth;H=c.height=innerHeight;pts=Array.from({length:55},()=>({x:Math.random()*W,y:Math.random()*H,vx:(Math.random()-.5)*.18,vy:(Math.random()-.5)*.18,r:Math.random()*1.4+.4,hue:Math.random()>0.7?260:220}))}addEventListener('resize',resize);resize();(function draw(){ctx.clearRect(0,0,W,H);pts.forEach(p=>{p.x+=p.vx;p.y+=p.vy;if(p.x<0||p.x>W)p.vx*=-1;if(p.y<0||p.y>H)p.vy*=-1;ctx.beginPath();ctx.arc(p.x,p.y,p.r,0,Math.PI*2);ctx.fillStyle=`hsla(${p.hue},70%,65%,.35)`;ctx.fill()});pts.forEach((a,i)=>pts.slice(i+1).forEach(b=>{const d=Math.hypot(a.x-b.x,a.y-b.y);if(d<120){ctx.beginPath();ctx.moveTo(a.x,a.y);ctx.lineTo(b.x,b.y);ctx.strokeStyle=`rgba(124,58,237,${.12*(1-d/120)})`;ctx.lineWidth=.6;ctx.stroke()}}));requestAnimationFrame(draw)})();})();
+  (function draw(){ctx.clearRect(0,0,W,H);pts.forEach(p=>{p.x+=p.vx;p.y+=p.vy;if(p.x<0||p.x>W)p.vx*=-1;if(p.y<0||p.y>H)p.vy*=-1;ctx.beginPath();ctx.arc(p.x,p.y,p.r,0,Math.PI*2);ctx.fillStyle=`hsla(${p.hue},70%,65%,.35)`;ctx.fill()});pts.forEach((a,i)=>pts.slice(i+1).forEach(b=>{const d=Math.hypot(a.x-b.x,a.y-b.y);if(d<120){ctx.beginPath();ctx.moveTo(a.x,a.y);ctx.lineTo(b.x,b.y);ctx.strokeStyle=`rgba(124,58,237,${.12*(1-d/120)})`;ctx.lineWidth=.6;ctx.stroke()}}));requestAnimationFrame(draw)})();
 
 // ── State ──
 let ttsOn=false,isRec=false,mediaRec=null,audioChunks=[];
@@ -303,6 +303,7 @@ function md(t){return t.replace(/```(\w*)\n?([\s\S]*?)```/g,(_,l,c)=>`<pre><code
 async function api(url,body){const r=await fetch(url,{method:'POST',headers:{'Content-Type':'application/json'},body:JSON.stringify(body)});return r.json()}
 function openModal(name){document.getElementById('modal-'+name).classList.add('open');if(name==='notes')loadNotes()}
 function closeModal(name){document.getElementById('modal-'+name).classList.remove('open')}
+function scrollMsgs(){const m=document.getElementById('messages');m.scrollTo({top:m.scrollHeight,behavior:'smooth'})}
 
 // ── Chat ──
 function appendMsg(role,html,raw){
@@ -330,14 +331,14 @@ function appendMsg(role,html,raw){
     wrap.appendChild(acts);
   }
   document.getElementById('messages').appendChild(wrap);
-  (function(){var m=document.getElementById('messages');m.scrollTo({top:m.scrollHeight,behavior:'smooth'});})();
+  scrollMsgs();
   chatHistory.push({role:role==='user'?'user':'assistant',text:raw||html});
   return msg;
 }
 
 async function sendChat(){
   const inp=document.getElementById('chatInp');
-  const msgText=inp.value.trim(); // Renamed 'msg' to 'msgText' for clarity and to avoid shadowing
+  const msgText=inp.value.trim();
   if(!msgText)return;
 
   speechSynthesis.cancel();
@@ -356,9 +357,25 @@ async function sendChat(){
 
   try{
     let intent='chat';
-    try{const c=await api('/classify',{message:msgText});intent=c.intent||'chat'}catch(e){/* Consider logging classification errors for debugging */ }
+    // Classify intent, wrap in its own try/catch for robustness
+    try{const c=await api('/classify',{message:msgText});intent=c.intent||'chat'}catch(e){console.error("Intent classification failed:", e); }
 
-    // Remove typing indicator before showing the actual response or intent-specific UI
+    // Remove typing indicator before showing the actual response or intent-specific UI for faster feedback
+    typingMsg.closest('.msg-wrap').remove();
+
+    if(intent==='image'){await chatImageIntent(msgText);return}
+    if(intent==='websearch'){await chatWebIntent(msgText);return}
+
+    // Default chat API call
+    const d=await api('/chat',{message:msgText});
+    const reply=d.reply||d.error||'…';
+    appendMsg('bot',reply,reply);
+    if(ttsOn)speak(reply);
+    if(/save.*(note|notes)|add.*(note|notes)|generate.*note|create.*note/i.test(msgText)){
+      const r=await fetch('/notes');const nd=await r.json();
+      const existing=nd.notes||[];existing.push(reply);
+      await api('/notes',{notes:existing});notes=existing;
+      appendMsg('bot','📝 Saved to Notes!');toast('Saved to Notes');
     }
   }catch(e){appendMsg('bot','⚠️ '+esc(e.message))}
   document.getElementById('sendBtn').disabled=false;
@@ -482,7 +499,7 @@ async function solveInChat(dataUrl){
     <div class="scan-status">🔍 Scanning question…</div>`;
   row.appendChild(av);row.appendChild(msg);wrap.appendChild(row);
   document.getElementById('messages').appendChild(wrap);
-  (function(){var m=document.getElementById('messages');m.scrollTo({top:m.scrollHeight,behavior:'smooth'});})();
+  scrollMsgs();
 
   // extract question
   const r1=await fetch('/image-to-text',{method:'POST',headers:{'Content-Type':'application/json'},body:JSON.stringify({image:dataUrl})});
@@ -503,7 +520,7 @@ async function solveInChat(dataUrl){
     <div style="color:#aaa;font-size:0.8rem;margin-bottom:10px">${esc(question)}</div>
     <div style="font-size:0.72rem;color:#4ade80;margin-bottom:4px">✅ Answer</div>
     <div style="color:#eee;line-height:1.7">${md(answer)}</div>`;
-  (function(){var m=document.getElementById('messages');m.scrollTo({top:m.scrollHeight,behavior:'smooth'});})();
+  scrollMsgs();
   chatHistory.push({role:'assistant',text:answer});
   if(ttsOn)speak(answer);
 }
@@ -627,7 +644,7 @@ async function runFeature(name){
           <button class="feat-btn" style="margin-top:6px" onclick="stopQrScan()">Stop</button>`;
         row.appendChild(av);row.appendChild(msg);wrap.appendChild(row);
         document.getElementById('messages').appendChild(wrap);
-        (function(){var m=document.getElementById('messages');m.scrollTo({top:m.scrollHeight,behavior:'smooth'});})();
+        scrollMsgs();
         // load jsQR and start scan
         if(!window.jsQR){
           const s=document.createElement('script');s.src='https://cdn.jsdelivr.net/npm/jsqr@1.4.0/dist/jsQR.js';
@@ -669,17 +686,15 @@ async function runFeature(name){
         <div id="drawGuess" style="margin-top:6px;color:#4ade80;font-size:0.85rem"></div>`;
       row.appendChild(av);row.appendChild(msg);wrap.appendChild(row);
       document.getElementById('messages').appendChild(wrap);
-      (function(){var m=document.getElementById('messages');m.scrollTo({top:m.scrollHeight,behavior:'smooth'});})();
-      setTimeout(()=>{
-        drawCanvas=document.getElementById('drawCanvas');
-        drawCtx=drawCanvas.getContext('2d');
-        drawCtx.strokeStyle='#a78bfa';drawCtx.lineWidth=3;drawCtx.lineCap='round';
-        function pos(e){const r=drawCanvas.getBoundingClientRect(),t=e.touches?e.touches[0]:e;return{x:(t.clientX-r.left)*(drawCanvas.width/r.width),y:(t.clientY-r.top)*(drawCanvas.height/r.height)}}
-        drawCanvas.addEventListener('mousedown',e=>{drawDrawing=true;const p=pos(e);drawCtx.beginPath();drawCtx.moveTo(p.x,p.y)});
-        drawCanvas.addEventListener('mousemove',e=>{if(!drawDrawing)return;const p=pos(e);drawCtx.lineTo(p.x,p.y);drawCtx.stroke()});
-        drawCanvas.addEventListener('mouseup',()=>drawDrawing=false);
-        drawCanvas.addEventListener('mouseleave',()=>drawDrawing=false);
-      },100);break;
+      scrollMsgs();
+      drawCanvas=document.getElementById('drawCanvas');
+      drawCtx=drawCanvas.getContext('2d');
+      drawCtx.strokeStyle='#a78bfa';drawCtx.lineWidth=3;drawCtx.lineCap='round';
+      const getPos = (e) => {const r=drawCanvas.getBoundingClientRect(),t=e.touches?e.touches[0]:e;return{x:(t.clientX-r.left)*(drawCanvas.width/r.width),y:(t.clientY-r.top)*(drawCanvas.height/r.height)}};
+      drawCanvas.addEventListener('mousedown',e=>{drawDrawing=true;const p=getPos(e);drawCtx.beginPath();drawCtx.moveTo(p.x,p.y)});
+      drawCanvas.addEventListener('mousemove',e=>{if(!drawDrawing)return;const p=getPos(e);drawCtx.lineTo(p.x,p.y);drawCtx.stroke()});
+      ['mouseup','mouseleave'].forEach(ev=>drawCanvas.addEventListener(ev,()=>drawDrawing=false));
+      break;
     }
     case 'theme':{
       themeIdx=(themeIdx+1)%themes.length;

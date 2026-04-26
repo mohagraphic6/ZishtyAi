@@ -43,11 +43,6 @@ def sw():
     return response
 
 
-
-    return send_from_directory("static", "index.html")
-
-
-
 # ── Chat ──
 @app.route("/chat", methods=["POST"])
 def chat_endpoint():
@@ -285,7 +280,7 @@ def image_edit_ai():
         image_b64 = image_b64.split(",", 1)[1]
     try:
         response = get_groq().chat.completions.create(
-            model="meta-llama/llama-4-scout-17b-16e-instruct",
+            model="llama-3.2-11b-vision-preview",
             messages=[{
                 "role": "user",
                 "content": [
@@ -366,7 +361,7 @@ def image_to_text():
         image_b64 = image_b64.split(",", 1)[1]
     try:
         response = get_groq().chat.completions.create(
-            model="meta-llama/llama-4-scout-17b-16e-instruct",
+            model="llama-3.2-11b-vision-preview",
             messages=[{
                 "role": "user",
                 "content": [
@@ -394,7 +389,7 @@ def sketch_to_image():
     try:
         # Step 1: use vision model to describe what's in the sketch
         vision = get_groq().chat.completions.create(
-            model="meta-llama/llama-4-scout-17b-16e-instruct",
+            model="llama-3.2-11b-vision-preview",
             messages=[{
                 "role": "user",
                 "content": [
@@ -728,4 +723,3 @@ def _enhance_prompt(prompt, media_type):
 if __name__ == "__main__":
     port = int(os.environ.get("PORT", 5000))
     app.run(debug=False, host="0.0.0.0", port=port)
-
