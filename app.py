@@ -4,13 +4,7 @@ from groq import Groq
 from dotenv import load_dotenv
 import os, tempfile, requests, base64, hashlib, subprocess, re, difflib, socket, json, sys
 
-# support PyInstaller bundle
-# support PyInstaller bundle
-if getattr(sys, 'frozen', False):
-    BASE_DIR = sys._MEIPASS
-else:
-    BASE_DIR = os.path.dirname(os.path.abspath(__file__))
-
+BASE_DIR = os.path.dirname(os.path.abspath(__file__))
 load_dotenv(os.path.join(BASE_DIR, ".env"))
 HF_HEADERS = {"Authorization": f"Bearer {os.getenv('HF_TOKEN', '')}"}
 app = Flask(__name__, static_folder=os.path.join(BASE_DIR, "static"))
