@@ -36,6 +36,10 @@ def server_error(e):
 def index():
     return send_from_directory("static", "chat.html")
 
+@app.route("/chat-ui")
+def chat_ui():
+    return send_from_directory("static", "index.html")
+
 @app.route("/sw.js")
 def sw():
     response = send_from_directory("static", "sw.js", mimetype="application/javascript")
