@@ -110,7 +110,7 @@ def classify():
 @app.route("/fs/list", methods=["POST"])
 def fs_list():
     data = request.get_json()
-    path = data.get("path", os.path.expanduser("~"))
+    path = data.get("path", BASE_DIR)
     try:
         path = os.path.abspath(path)
         items = []
@@ -196,7 +196,7 @@ def fs_create():
 def fs_search():
     data = request.get_json()
     query = data.get("query", "").strip()
-    path = data.get("path", os.path.expanduser("~"))
+    path = data.get("path", BASE_DIR)
     if not query:
         return jsonify({"error": "No query"}), 400
     results = []
@@ -569,7 +569,7 @@ def port_scan():
 def terminal():
     data = request.get_json()
     cmd = data.get("cmd", "").strip()
-    cwd = data.get("cwd", os.path.expanduser("~"))
+    cwd = data.get("cwd", BASE_DIR)
     if not cmd:
         return jsonify({"output": "", "error": "No command"}), 400
     try:
@@ -592,7 +592,7 @@ def terminal():
 @app.route("/git/status", methods=["POST"])
 def git_status():
     data = request.get_json()
-    path = data.get("path", os.path.expanduser("~"))
+    path = data.get("path", BASE_DIR)
     try:
         result = subprocess.run(["git", "status", "--short"], capture_output=True, text=True, cwd=path, timeout=5)
         branch = subprocess.run(["git", "branch", "--show-current"], capture_output=True, text=True, cwd=path, timeout=5)
@@ -604,7 +604,7 @@ def git_status():
 @app.route("/git/diff", methods=["POST"])
 def git_diff():
     data = request.get_json()
-    path = data.get("path", os.path.expanduser("~"))
+    path = data.get("path", BASE_DIR)
     try:
         result = subprocess.run(["git", "diff"], capture_output=True, text=True, cwd=path, timeout=5)
         return jsonify({"diff": result.stdout, "error": result.stderr})
@@ -720,4 +720,4 @@ def _enhance_prompt(prompt, media_type):
 
 if __name__ == "__main__":
     port = int(os.environ.get("PORT", 5000))
-    app.run(debug=False, host="0.0.0.0", port=port)
+    app.run(debug=True, host="0.0.0.0", port=port)
