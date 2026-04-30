@@ -836,22 +836,3 @@ appendMsg('bot','Hey! 👋 I\'m Zishty, created by Mr Moha. How can I help you t
 </script>
 </body>
 </html>
-    },300);
-  });
-  // fix viewport height on mobile
-  function setVh(){document.documentElement.style.setProperty('--vh',window.innerHeight*0.01+'px')}
-  window.addEventListener('resize',setVh);setVh();
-}
-
-// ── PWA service worker ──
-if('serviceWorker' in navigator){
-  navigator.serviceWorker.register('/sw.js', {scope: '/'})
-    .then(r=>console.log('SW registered'))
-    .catch(e=>console.log('SW error',e));
-}
-
-// ── Init ──
-appendMsg('bot','Hey! 👋 I\'m Zishty, created by Mr Moha. How can I help you today? 😊');
-</script>
-</body>
-</html>
