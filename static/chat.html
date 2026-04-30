@@ -35,7 +35,7 @@ header::after{content:'';position:absolute;bottom:0;left:0;right:0;height:1px;ba
 .logo-text{font-size:1.1rem;font-weight:700;background:linear-gradient(135deg,#a78bfa,#60a5fa);-webkit-background-clip:text;background-clip:text;-webkit-text-fill-color:transparent}
 .logo-sub{font-size:0.68rem;color:#888;margin-left:2px}
 .header-right{margin-left:auto;display:flex;align-items:center;gap:8px}
-.status-dot{width:8px;height:8px;border-radius:50%;background:#4ade80;box-shadow:0 0 8px #4ade80;transition:background .3s,box-shadow .3s}
+.status-dot{width:8px;height:8px;border-radius:50%;background:#4ade80;box-shadow:0 0 8px #4ade80;transition:background .3s,box-shadow .3s;animation:pulse 2s infinite}
 .status-txt{font-size:0.7rem;color:#aaa;transition:color .3s}@keyframes pulse{0%,100%{opacity:1;box-shadow:0 0 8px #4ade80}50%{opacity:.5;box-shadow:0 0 16px #4ade80}}
 .status-txt{font-size:0.7rem;color:#4ade80}
 .tts-btn{background:none;border:1px solid rgba(124,58,237,.3);color:#555;width:30px;height:30px;border-radius:8px;cursor:pointer;font-size:.85rem;display:flex;align-items:center;justify-content:center;transition:all .15s}
@@ -524,27 +524,31 @@ async function solveInChat(dataUrl){
   scrollMsgs();
 
   // extract question
-  const r1=await fetch('/image-to-text',{method:'POST',headers:{'Content-Type':'application/json'},body:JSON.stringify({image:dataUrl})});
-  const d1=await r1.json();
-  if(d1.error){msg.innerHTML='<span style="color:#f87171">'+esc(d1.error)+'</span>';return}
-  const question=d1.description;
-  msg.querySelector('.scan-status').textContent='🧠 Solving…';
+  try {
+    const r1=await fetch('/image-to-text',{method:'POST',headers:{'Content-Type':'application/json'},body:JSON.stringify({image:dataUrl})});
+    const d1=await r1.json();
+    if(d1.error){msg.innerHTML='<span style="color:#f87171">'+esc(d1.error)+'</span>';return}
+    const question=d1.description;
+    msg.querySelector('.scan-status').textContent='🧠 Solving…';
 
-  // solve
-  const r2=await fetch('/chat',{method:'POST',headers:{'Content-Type':'application/json'},body:JSON.stringify({message:'Solve this question or quiz and explain the answer step by step:\n\n'+question})});
-  const d2=await r2.json();
-  const answer=d2.reply||d2.error||'No answer';
+    // solve
+    const r2=await fetch('/chat',{method:'POST',headers:{'Content-Type':'application/json'},body:JSON.stringify({message:'Solve this question or quiz and explain the answer step by step:\n\n'+question})});
+    const d2=await r2.json();
+    const answer=d2.reply||d2.error||'No answer';
 
-  // replace with final result
-  msg.innerHTML=`
+    // replace with final result
+    msg.innerHTML=`
     <img src="${dataUrl}" style="width:100%;border-radius:8px;margin-bottom:8px;border:1px solid rgba(124,58,237,.3)"/>
     <div style="font-size:0.72rem;color:#555;margin-bottom:4px">📋 Question</div>
     <div style="color:#aaa;font-size:0.8rem;margin-bottom:10px">${esc(question)}</div>
     <div style="font-size:0.72rem;color:#4ade80;margin-bottom:4px">✅ Answer</div>
     <div style="color:#eee;line-height:1.7">${md(answer)}</div>`;
-  scrollMsgs();
-  chatHistory.push({role:'assistant',text:answer});
-  if(ttsOn)speak(answer);
+    scrollMsgs();
+    chatHistory.push({role:'assistant',text:answer});
+    if(ttsOn)speak(answer);
+  } catch (e) {
+    msg.innerHTML = '<span style="color:#f87171">⚠️ Error: ' + esc(e.message) + '</span>';
+  }
 }
 
 // ── Video ──
@@ -813,6 +817,25 @@ if(/iPhone|iPad|iPod|Android/i.test(navigator.userAgent)){
     setTimeout(()=>{
       inp.scrollIntoView({behavior:'smooth',block:'end'});
       (function(){var m=document.getElementById('messages');m.scrollTo({top:m.scrollHeight,behavior:'smooth'});})();
+    },300);
+  });
+  // fix viewport height on mobile
+  function setVh(){document.documentElement.style.setProperty('--vh',window.innerHeight*0.01+'px')}
+  window.addEventListener('resize',setVh);setVh();
+}
+
+// ── PWA service worker ──
+if('serviceWorker' in navigator){
+  navigator.serviceWorker.register('/sw.js', {scope: '/'})
+    .then(r=>console.log('SW registered'))
+    .catch(e=>console.log('SW error',e));
+}
+
+// ── Init ──
+appendMsg('bot','Hey! 👋 I\'m Zishty, created by Mr Moha. How can I help you today? 😊');
+</script>
+</body>
+</html>
     },300);
   });
   // fix viewport height on mobile
